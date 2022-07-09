@@ -86,13 +86,13 @@ function questionClick(e) {
     if(e.target.value === answer && questions.length <= 0){
         score = score + 10;
         console.log('Correct! Play again!');
-        feedbackEl.textContent = `Game Over! Your score is ${score}`;
+        feedbackEl.textContent = `Game Over! Your final score is ${score}`;
         clearInterval(timerId);
         endQuiz();
     }else if(e.target.value === answer){
         score = score + 10;
-        console.log('Correct!');
-        feedbackEl.textContent = `Score so far: ${score}`;
+        //console.log('Correct!');
+        feedbackEl.textContent = `Correct! Score so far: ${score}`;
         getQ(currentQuestionIndex + 1);
     }else if(e.target.value !== answer && questions.length > 0){
         console.log('Wrong! 10 second penalty.');
