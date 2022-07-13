@@ -1,10 +1,12 @@
-// TODO: add game logic
 // variables to keep track of quiz state
 var currQuestionIndex = 0;
 var time = questions.length * 15;
 var timerId;
-var scores = [];
-//var q = 0;
+var highscores = [];
+var initials;
+var currQuestion;
+var answer;
+var score = 0;
 
 // variables to reference DOM elements
 var questionsEl = document.getElementById("questions");
@@ -15,31 +17,32 @@ var startBtn = document.getElementById("start");
 var initialsEl = document.getElementById("initials");
 var feedbackEl = document.getElementById("feedback");
 var loginEl = document.getElementById("login");
+var startScreenEl = document.getElementById("start-screen");
 
-// sound effects
+// sound effects not in use
 var sfxRight = new Audio("assets/sfx/correct.wav");
 var sfxWrong = new Audio("assets/sfx/incorrect.wav");
 
-var initials;
+//start quiz from button
 function startQuiz() {
+
+    //initials should be filled in before start
     while( initialsEl.value == '' ){
       feedback.setAttribute("class"," show");
       feedbackEl.textContent = 'Please enter your initials before starting';
       return;
     }
+    
+    //grab initials
     initials = initialsEl.value;
-    feedback.setAttribute("class"," hide");
-    //feedbackEl.textContent = 'Please enter your initials before starting';
-    //console.log('this');
-    //JSON.stringify(window.localStorage.setItem("initials", initialsEl.value));
+    
+    //set initial timer
     timerEl.textContent = '';
-    // hide start screen
-    var startScreenEl = document.getElementById("start-screen");
-    startScreenEl.setAttribute("class", "hide");
-
+  
     // un-hide questions section
     questionsEl.removeAttribute("class");
 
+    // clear existing interval
     if (timerId) {
       clearInterval(timerId);
     }
@@ -49,36 +52,30 @@ function startQuiz() {
     // show starting time
     timerEl.textContent = time;
 
-        //console.log(questions.length);
-        //if(timerId > 0 || questions.length > 0){
-        // console.log(questions);
-            //clear choices
-            //currQuestionIndex++;
+    //hide login screen
     loginEl.style.display = 'none';
+    
+    // get first question
     getQ();
-    //return;
- // } else {
-   // quizEnd();
- // }
 }
+
+// start button
 startBtn.addEventListener('click',startQuiz);
 
-var currQuestion;
-var answer;
-
+// clear all buttons
 function clearQs(){
   while (choicesEl.firstChild) {
     choicesEl.removeChild(choicesEl.firstChild);
   }
 }
+
+// get question
 function getQ() {
-  //console.log(window.localStorage.getItem("initials"));
   clearQs();
   var titleEl = document.getElementById("question-title");
   currQuestion = questions[currQuestionIndex];
   titleEl.textContent = currQuestion.title;
   answer = currQuestion.answer;
-  //console.log(answer);
   currQuestion.choices.forEach(function(choice, i) {
         var questionOption = document.createElement('button');
         questionOption.textContent = i + 1 + ". " + choice;
@@ -86,29 +83,15 @@ function getQ() {
         questionOption.className = "btn btn-success";
         choicesEl.appendChild(questionOption);
         questionOption.addEventListener('click',clickOnQ);
-        //currentQuestionIndex = currQuestIndex;
-        //console.log(this.textContent);
   });
-    //questions.length = questions.length - 1;
-    /**
-    var questions = [
-    title: "Commonly used data types DO NOT include:",
-    choices: ["strings", "booleans", "alerts", "numbers"],
-    answer: "alerts"
-    */
 }
-/*else{
-    
-  if( currQuestionIndex < questions.length ){
-    titleEl.textContent = '';
-    feedbackEl.setAttribute('class','show');
-  }*/
-var score = 0;
+
+// answer, i.e. click on question button
 function clickOnQ(e) {
-    //console.log(currQuestionIndex);
-    //currQuestionIndex++;
-    // If answer is correct and there are no questions left
+
+    // if answer is correct and no questions are left
     if(e.target.value === answer){
+      sfxRight.play();
       if(currQuestionIndex >= questions.length - 1){
         clearQs();
         score = score + 10;
@@ -116,122 +99,97 @@ function clickOnQ(e) {
         feedbackEl.setAttribute('class', 'show');
         feedbackEl.textContent = `Correct! Your final score is ${score}`;
         endQuiz();
-        //questions.length = questions.length - 1;
-        
-        // If the answer is correct and there are more questions
-        e.target.removeEventListener('click',clickOnQ);
+
       }else{
-        //console.log('answer correct and still questions left');
+
+        // If the answer is correct and there are more questions
         currQuestionIndex++;
         score = score + 10;
         feedbackEl.setAttribute('class', 'show');
         feedbackEl.textContent = `Correct! Your score is ${score}`;
-        //questions.pop();
         if(currQuestionIndex < questions.length){
           getQ();
         }else{
           endQuiz();
         }
-        //questions.length = questions.length - 1;
       }
+
     //if the answer is wrong and there are questions left
     }else if(e.target.value !== answer){
-        //console.log(currQuestionIndex);
+        sfxWrong.play();
         if(currQuestionIndex < questions.length-1){
-          //console.log('penalty');
+
           feedbackEl.setAttribute('class', 'show');
           feedbackEl.textContent = `Wrong! 10 second penalty. Your score is ${score}`;
           time = time - 10;
-          //score = score - 10;
-          //questions.pop();
           currQuestionIndex++;
           getQ();
+
         //if the answer is wrong and there are no questions left
         }else{
           clearQs();
-          //score = score - 10;
           feedbackEl.setAttribute('class', 'show');
           feedbackEl.textContent = `Wrong! Your final score is ${score}`;
           e.target.removeEventListener('click',clickOnQ);
           endQuiz();
         }
+
     //anything else
     }else{
-        console.log('end game');
+        console.log('Game end due to foul weather');
     }
 }
-var highscores = [];
 
+//end quiz, wrap it up
 function endQuiz() {
     submitBtn.style.display = 'block';
     clearInterval(timerId);
     time = 0;
-    //console.log(timerId);
-    //timerEl.textContent = 'Game Over';
-    //console.log('Game over');
-    //questionsEl.setAttribute("class", "hide");
-      // show final score
+    
+    // show final score
     timerEl.textContent = time;
+
+    // get value of input box
+    initials = initialsEl.value.trim();
+
+    // save current score and initials
     var newScoreObj = {
       score: score,
       initials: initials
     };
-    //console.log(score, initials);
+
+    // get saved scores from localstorage, or if not any, set to empty array
+    highscores = JSON.parse(window.localStorage.getItem("highscores")) || [];
+    
+    // push scores to highscores array
     highscores.push(newScoreObj);
-    /*presentItem = 0;
-    function getValue(item) {
-      presentItem += item;
-      console.log(presentItem += item);
-    }
-    highscores.forEach(getValue);*/
-    window.localStorage.setItem("highscores", JSON.stringify(highscores));
+
+    // finishing message
     document.getElementById("question-title").textContent = "Game Over!";
+
     clearQs();
 }
+
+// decrement time, end quiz if time up
 function noteSeconds() {
-  //if(timerId){
-    //console.log('test');
     time--;
-    //console.log(time);
-    //console.log(time + " 2");
     timerEl.textContent = time;
-  //} else {
-    // check if user ran out of time
     if (time <= 0) {
       feedbackEl.textContent = 'Times up! Game Over!';
       timerEl.textContent = 0;
       endQuiz();
     }
-  //}
 }
 
+
 function saveHighscore() {
-      // get value of input box
-  var initials = initialsEl.value.trim();
-
-  // make sure value wasn't empty
-  //if (initials !== "") {
-    // get saved scores from localstorage, or if not any, set to empty array
-    //var highscores =
-      //JSON.parse(window.localStorage.getItem("highscores")) || [];
-
-   /* // format new score object for current user
-    var newScore = {
-      score: time,
-      initials: initials
-    };
 
     // save to localstorage
-    highscores.push(newScore);*/
     window.localStorage.setItem("highscores", JSON.stringify(highscores));
 
     // redirect to next page
     window.location.href = "highscores.html";
-  //}
-}
 
-//getStoredValues();
-function checkForEnter(event) {
 }
 
 // user clicks button to submit initials
@@ -241,10 +199,3 @@ submitBtn.onclick = saveHighscore;
 // user clicks button to start quiz
 startBtn.onclick = startQuiz;
 
-initialsEl.onkeyup = checkForEnter;
-
-/*function getStoredValues(){
-  console.log(window.localStorage.getItem("highscores"));
-  //console.log(window.localStorage.getItem("initials"));
-  //console.log(window.localStorage.getItem("score"));
-}*/

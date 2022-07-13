@@ -1,6 +1,6 @@
 # 04 Web APIs: Code Quiz
 
-Hi, I worked a long time on this one. Hopefully you will see that I have built on the starter code well. 
+Hi, I worked a long time on this one. Hopefully you will see that I have built on the starter code well.
 
 ![coding quiz demo](./Assets/images/Screenshot.png)
 
